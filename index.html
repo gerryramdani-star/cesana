@@ -489,6 +489,9 @@
                                     <input type="text" id="new-class-name" placeholder="Contoh: Kelas 7A" class="flex-grow p-2 border rounded">
                                     <button id="add-class-btn" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">Tambah</button>
                                 </div>
+				<div id="class-list-container" class="mt-8">
+    <!-- Daftar kelas akan dibuat oleh JavaScript di sini -->
+</div>
                             </div>
                             <hr class="my-8">
                             <div>
@@ -1290,6 +1293,8 @@ card.innerHTML = `
             }
             renderAssessmentTypesSettings(); // Ditambahkan
             calculateStorageUsage();
+
+	    renderClassListSettings(); // <-- TAMBAHKAN BARIS INI
         };
 
         const renderStudentListSettings = (classId) => {
@@ -1324,6 +1329,35 @@ card.innerHTML = `
 
             tableHTML += '</tbody></table>';
             studentListContainerSettings.innerHTML = tableHTML;
+        };
+
+	const renderClassListSettings = () => {
+            const container = document.getElementById('class-list-container');
+            if (!container) return; // Pengaman jika elemen tidak ditemukan
+
+            if (localClasses.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-sm text-center mt-4">Belum ada kelas yang ditambahkan.</p>';
+                return;
+            }
+
+            container.innerHTML = `
+                <h3 class="text-xl font-semibold mb-4 border-t pt-8">Kelola Kelas</h3>
+                <div class="space-y-2">
+                    ${localClasses.map(cls => `
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg border">
+                            <span class="font-medium text-gray-800">${cls.name}</span>
+                            <div class="flex gap-3">
+                                <button class="edit-class-btn text-blue-600 hover:text-blue-800" data-id="${cls.id}" data-name="${cls.name}" title="Edit Nama Kelas">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
+                                </button>
+                                <button class="delete-class-btn text-red-600 hover:text-red-800" data-id="${cls.id}" data-name="${cls.name}" title="Hapus Kelas">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
         };
 
         const renderAssessmentTypesSettings = () => {
