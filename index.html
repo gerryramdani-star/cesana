@@ -1360,6 +1360,65 @@ card.innerHTML = `
             `;
         };
 
+	const handleEditClass = async (classId, oldName) => {
+            const newName = prompt("Masukkan nama kelas baru:", oldName);
+            if (newName && newName.trim() !== "" && newName.trim() !== oldName) {
+                try {
+                    const classDocRef = doc(db, "userData", currentUser.uid, "classes", classId);
+                    await updateDoc(classDocRef, { name: newName.trim() });
+                    showToast(`Nama kelas berhasil diubah menjadi "${newName.trim()}".`);
+                } catch (e) {
+                    showToast("Gagal mengubah nama kelas.", "error");
+                    console.error("Gagal edit kelas:", e);
+                }
+            }
+        };
+
+        const handleDeleteClass = async (classId, className) => {
+            const studentsInClass = localStudents.filter(s => s.classId === classId);
+            const confirmationMessage = studentsInClass.length > 0
+                ? `Anda yakin ingin menghapus kelas "${className}"? Tindakan ini juga akan menghapus ${studentsInClass.length} siswa di dalamnya secara permanen.`
+                : `Anda yakin ingin menghapus kelas "${className}"?`;
+            
+            if (confirm(confirmationMessage)) {
+                try {
+                    const batch = writeBatch(db);
+                    
+                    const classDocRef = doc(db, "userData", currentUser.uid, "classes", classId);
+                    batch.delete(classDocRef);
+
+                    studentsInClass.forEach(student => {
+                        const studentDocRef = doc(db, "userData", currentUser.uid, "students", student.id);
+                        batch.delete(studentDocRef);
+});
+
+                    await batch.commit();
+                    showToast(`Kelas "${className}" dan semua siswanya berhasil dihapus.`);
+                } catch (e) {
+                    showToast("Gagal menghapus kelas.", "error");
+                    console.error("Gagal hapus kelas:", e);
+                }
+            }
+        };
+
+        // Event listener ini akan "mendengarkan" klik di seluruh halaman Pengaturan
+        // dan akan bereaksi jika yang diklik adalah tombol edit atau hapus kelas.
+        pengaturanPage.addEventListener('click', (e) => {
+            // Cari tombol terdekat yang diklik
+            const editBtn = e.target.closest('.edit-class-btn');
+            const deleteBtn = e.target.closest('.delete-class-btn');
+            
+            if (editBtn) {
+                // Jika tombol edit ditemukan, panggil fungsi handleEditClass
+                handleEditClass(editBtn.dataset.id, editBtn.dataset.name);
+            }
+            
+            if (deleteBtn) {
+                // Jika tombol hapus ditemukan, panggil fungsi handleDeleteClass
+                handleDeleteClass(deleteBtn.dataset.id, deleteBtn.dataset.name);
+            }
+        });
+
         const renderAssessmentTypesSettings = () => {
             if (localAssessmentTypes.length === 0) {
                 assessmentTypeListContainer.innerHTML = '<p class="text-gray-500 p-4 text-center">Belum ada jenis penilaian yang ditambahkan.</p>';
